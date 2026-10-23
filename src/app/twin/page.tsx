@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Activity, Plus, ArrowRight, AlertTriangle, Shield, Brain } from "lucide-react";
+import { Activity, Plus, ArrowRight, AlertTriangle, Shield, Brain, Droplets, Heart } from "lucide-react";
 
 interface TwinSummary {
   id: string;
@@ -32,21 +32,19 @@ export default function TwinListPage() {
   const [showCreate, setShowCreate] = useState(false);
   const [createForm, setCreateForm] = useState({
     patientId: "",
-    age: 45,
+    age: 55,
     gender: "male",
-    conditions: "",
+    conditions: "diabetes, hypertension",
+    severity: "moderate" as "well_controlled" | "moderate" | "poor",
   });
   const [creating, setCreating] = useState(false);
 
-  // Load twins from API (or show demo)
   useEffect(() => {
     loadTwins();
   }, []);
 
   async function loadTwins() {
-    // Try loading from API
     try {
-      // Try a known demo twin ID
       const demoIds = [
         "00000000-0000-0000-0000-000000000001",
         "00000000-0000-0000-0000-000000000002",
@@ -59,12 +57,8 @@ export default function TwinListPage() {
           if (data.twin) results.push(data.twin);
         } catch {}
       }
-      if (results.length > 0) {
-        setTwins(results);
-      } else {
-        // Demo data for offline viewing
-        setTwins(getDemoTwins());
-      }
+      if (results.length > 0) setTwins(results);
+      else setTwins(getDemoTwins());
     } catch {
       setTwins(getDemoTwins());
     } finally {
@@ -83,17 +77,14 @@ export default function TwinListPage() {
           patientId: createForm.patientId || crypto.randomUUID(),
           age: createForm.age,
           gender: createForm.gender,
-          chronicConditions: createForm.conditions
-            .split(",")
-            .map((c) => c.trim())
-            .filter(Boolean),
+          chronicConditions: createForm.conditions.split(",").map((c) => c.trim()).filter(Boolean),
+          severity: createForm.severity,
         }),
       });
       const data = await res.json();
       if (data.twinId) {
-        setCreateForm({ patientId: "", age: 45, gender: "male", conditions: "" });
+        setCreateForm({ patientId: "", age: 55, gender: "male", conditions: "diabetes, hypertension", severity: "moderate" });
         setShowCreate(false);
-        // Navigate to twin dashboard
         window.location.href = `/twin/${data.twinId}`;
       }
     } catch (e) {
@@ -120,21 +111,20 @@ export default function TwinListPage() {
               <Activity className="text-white" size={20} />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-gray-900">Patient Digital Twins</h1>
-              <p className="text-xs text-gray-500">AI-powered health state management</p>
+              <h1 className="text-lg font-bold text-gray-900">GlucoTwin — Diabetes Digital Twin</h1>
+              <p className="text-xs text-gray-500">Predicting glucose spikes 60 min before they happen</p>
             </div>
           </div>
           <button
             onClick={() => setShowCreate(!showCreate)}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium flex items-center gap-2 hover:bg-blue-700"
           >
-            <Plus size={16} /> Create Twin
+            <Plus size={16} /> New Twin
           </button>
         </div>
       </header>
 
       <main className="max-w-5xl mx-auto px-6 py-6 space-y-6">
-        {/* Create Form */}
         {showCreate && (
           <div className="bg-white rounded-2xl border border-blue-200 p-6">
             <h2 className="text-sm font-semibold text-gray-800 mb-4">Create New Digital Twin</h2>
@@ -167,18 +157,19 @@ export default function TwinListPage() {
                 >
                   <option value="male">Male</option>
                   <option value="female">Female</option>
-                  <option value="other">Other</option>
                 </select>
               </div>
               <div>
-                <label className="text-xs text-gray-500 mb-1 block">Conditions (comma-sep)</label>
-                <input
-                  type="text"
-                  value={createForm.conditions}
-                  onChange={(e) => setCreateForm({ ...createForm, conditions: e.target.value })}
-                  placeholder="diabetes, hypertension"
+                <label className="text-xs text-gray-500 mb-1 block">Severity</label>
+                <select
+                  value={createForm.severity}
+                  onChange={(e) => setCreateForm({ ...createForm, severity: e.target.value as any })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                />
+                >
+                  <option value="well_controlled">Well Controlled</option>
+                  <option value="moderate">Moderate</option>
+                  <option value="poor">Poor Control</option>
+                </select>
               </div>
             </div>
             <div className="mt-4 flex gap-2">
@@ -189,18 +180,15 @@ export default function TwinListPage() {
               >
                 {creating ? "Creating..." : "Create & Open Twin"}
               </button>
-              <button
-                onClick={() => setShowCreate(false)}
-                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium"
-              >
+              <button onClick={() => setShowCreate(false)} className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium">
                 Cancel
               </button>
             </div>
           </div>
         )}
 
-        {/* Twins Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Demo Twin Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {twins.map((twin) => (
             <a
               key={twin.id}
@@ -209,42 +197,21 @@ export default function TwinListPage() {
             >
               <div className="flex items-start justify-between mb-3">
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-800">
-                    Twin #{twin.id.slice(0, 8)}
-                  </h3>
-                  <p className="text-xs text-gray-500">
-                    {twin.age} yrs · {twin.gender}
-                  </p>
+                  <h3 className="text-sm font-semibold text-gray-800">Twin #{twin.id.slice(0, 8)}</h3>
+                  <p className="text-xs text-gray-500">{twin.age} yrs · {twin.gender}</p>
                 </div>
-                <ArrowRight
-                  size={18}
-                  className="text-gray-300 group-hover:text-blue-500 transition"
-                />
+                <ArrowRight size={18} className="text-gray-300 group-hover:text-blue-500 transition" />
               </div>
-
               <div className="flex items-center gap-3 mb-3">
-                <div className="text-3xl font-bold text-blue-700">
-                  {parseFloat(twin.healthScore).toFixed(0)}
-                </div>
-                <div>
-                  <div className="text-xs text-gray-500">Health Score</div>
-                  <span
-                    className={`text-xs font-medium px-2 py-0.5 rounded-full ${getStateBadge(
-                      twin.twinState
-                    )}`}
-                  >
-                    {twin.twinState.replace("_", " ")}
-                  </span>
-                </div>
+                <div className="text-3xl font-bold text-blue-700">{parseFloat(twin.healthScore).toFixed(0)}</div>
+                <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${getStateBadge(twin.twinState)}`}>
+                  {twin.twinState.replace("_", " ")}
+                </span>
               </div>
-
               {twin.chronicConditions?.length > 0 && (
                 <div className="flex flex-wrap gap-1">
                   {twin.chronicConditions.slice(0, 4).map((c, i) => (
-                    <span
-                      key={i}
-                      className="text-xs bg-red-50 text-red-600 px-2 py-0.5 rounded"
-                    >
+                    <span key={i} className="text-xs bg-red-50 text-red-600 px-2 py-0.5 rounded">
                       {c.replace("_", " ")}
                     </span>
                   ))}
@@ -257,30 +224,24 @@ export default function TwinListPage() {
         {/* Feature Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
           <div className="bg-white rounded-xl border border-gray-200 p-5">
-            <Shield className="text-blue-600 mb-2" size={24} />
-            <h3 className="text-sm font-semibold text-gray-800 mb-1">
-              Real-time Health Monitoring
-            </h3>
+            <Droplets className="text-blue-600 mb-2" size={24} />
+            <h3 className="text-sm font-semibold text-gray-800 mb-1">Glucose Spike Prediction</h3>
             <p className="text-xs text-gray-500">
-              Continuous vitals tracking with automatic health score computation and state machine transitions.
+              Predicts hyperglycemic events (&gt;180 mg/dL) 60 min in advance by fusing EHR priors with real-time CGM + wearable data.
             </p>
           </div>
           <div className="bg-white rounded-xl border border-gray-200 p-5">
             <Brain className="text-purple-600 mb-2" size={24} />
-            <h3 className="text-sm font-semibold text-gray-800 mb-1">
-              AI Predictive Engine
-            </h3>
+            <h3 className="text-sm font-semibold text-gray-800 mb-1">Two-Stream Data Fusion</h3>
             <p className="text-xs text-gray-500">
-              Disease progression forecasting, readmission risk, vitals prediction, and complication assessment.
+              Combines static EHR (HbA1c, BMI, genetics, labs) with dynamic wearables (CGM, HRV, steps, sleep, stress) for holistic twin modeling.
             </p>
           </div>
           <div className="bg-white rounded-xl border border-gray-200 p-5">
             <AlertTriangle className="text-amber-600 mb-2" size={24} />
-            <h3 className="text-sm font-semibold text-gray-800 mb-1">
-              Treatment Simulation
-            </h3>
+            <h3 className="text-sm font-semibold text-gray-800 mb-1">Adverse Event Detection</h3>
             <p className="text-xs text-gray-500">
-              What-if scenario modeling for medications, lifestyle changes, and procedures before real intervention.
+              Real-time detection of hyperglycemia, hypoglycemia, and cardiac risk with explainable contributing factors.
             </p>
           </div>
         </div>
@@ -289,7 +250,6 @@ export default function TwinListPage() {
   );
 }
 
-// Demo twins for offline display
 function getDemoTwins(): TwinSummary[] {
   return [
     {
@@ -297,9 +257,9 @@ function getDemoTwins(): TwinSummary[] {
       patientId: "demo-patient-001",
       twinState: "stable",
       healthScore: "82",
-      age: 45,
+      age: 55,
       gender: "male",
-      chronicConditions: ["hypertension"],
+      chronicConditions: ["diabetes", "hypertension"],
       updatedAt: new Date().toISOString(),
     },
     {
@@ -317,9 +277,9 @@ function getDemoTwins(): TwinSummary[] {
       patientId: "demo-patient-003",
       twinState: "baseline",
       healthScore: "94",
-      age: 28,
+      age: 48,
       gender: "female",
-      chronicConditions: [],
+      chronicConditions: ["diabetes"],
       updatedAt: new Date().toISOString(),
     },
   ];

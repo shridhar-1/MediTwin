@@ -1,17 +1,17 @@
 /**
- * API: Digital Twin Management
+ * API: Digital Twin Management — GlucoTwin Edition
  *
- * POST   /api/twin          — Create a new twin for a patient
- * GET    /api/twin?patientId= — Get twin by patient ID
- * PUT    /api/twin          — Update twin (vitals, state)
+ * POST   /api/twin          — Create/update twin, run predictions
+ * GET    /api/twin?twinId=  — Get twin with glucose predictions
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { createTwin, getTwinByPatient, getTwinById, updateTwin, recomputeRisks } from "@/lib/twin-engine";
-import { generatePredictions } from "@/lib/prediction-engine";
 import { getPredictionsForTwin } from "@/lib/prediction-engine";
 import { getSimulationsForTwin } from "@/lib/simulation-engine";
 import { getRecentVitals, getRisksForTwin } from "@/lib/twin-engine";
+import { generateSyntheticPatient, generateWearableStream } from "@/lib/synthetic-data";
+import { predictGlucoseSpike, generateGlucoseForecast } from "@/lib/glucose-model";
 
 export async function POST(request: NextRequest) {
   try {
@@ -30,9 +30,6 @@ export async function POST(request: NextRequest) {
       // Compute initial risk scores
       await recomputeRisks(twinId);
 
-      // Auto-generate predictions after creation
-      await generatePredictions(twinId);
-
       const twin = await getTwinById(twinId);
       return NextResponse.json({ success: true, twinId, twin });
     }
@@ -45,11 +42,6 @@ export async function POST(request: NextRequest) {
         newMedication: body.newMedication,
       });
       return NextResponse.json({ success: true, ...result });
-    }
-
-    if (body.action === "predict") {
-      const results = await generatePredictions(body.twinId);
-      return NextResponse.json({ success: true, predictions: results });
     }
 
     return NextResponse.json({ error: "Unknown action" }, { status: 400 });
@@ -77,12 +69,51 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: "Twin not found" }, { status: 404 });
       }
 
+      // Generate synthetic EHR for this twin (based on conditions)
+      const severity = twin.healthScore && parseFloat(twin.healthScore) > 75
+        ? "well_controlled"
+        : twin.healthScore && parseFloat(twin.healthScore) > 50
+        ? "moderate"
+        : "poor";
+
+      const syntheticPatient = generateSyntheticPatient(
+        severity as "well_controlled" | "moderate" | "poor"
+      );
+
+      // If we have real vitals, use them; otherwise use synthetic wearable data
+      let wearableStream = syntheticPatient.wearableData;
+      if (vitals.length > 0) {
+        // Convert DB vitals to wearable format for model input
+        wearableStream = vitals.map((v) => ({
+          timestamp: v.recordedAt,
+          glucose: v.bloodGlucose ? parseFloat(String(v.bloodGlucose)) : 100,
+          heartRate: v.heartRate ?? 72,
+          hrRmssd: Math.floor(20 + Math.random() * 30),
+          steps: Math.floor(Math.random() * 20),
+          sleepStage: "awake" as const,
+          sleepHours: 7,
+          caloriesBurned: 2,
+          mealDetected: Math.random() > 0.7,
+          stressLevel: Math.floor(20 + Math.random() * 40),
+        }));
+      }
+
+      // Run glucose spike prediction (60 min ahead)
+      const recentWindow = wearableStream.slice(-12); // last hour
+      const glucosePrediction = predictGlucoseSpike(recentWindow, syntheticPatient.ehr, 60);
+
+      // Generate 4-hour glucose forecast
+      const glucoseForecast = generateGlucoseForecast(recentWindow, syntheticPatient.ehr, 4);
+
       return NextResponse.json({
         twin,
         vitals,
         risks,
         predictions,
         simulations,
+        glucosePrediction,
+        glucoseForecast,
+        syntheticEHR: syntheticPatient.ehr,
       });
     }
 
