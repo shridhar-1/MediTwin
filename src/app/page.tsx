@@ -6,7 +6,7 @@ import { AiSummaryCard } from "@/components/home/ai-summary-card";
 import { AyushSummaryCard } from "@/components/home/ayush-summary-card";
 import { Capabilities } from "@/components/home/capabilities";
 import { DemoLoginButton } from "@/components/auth/demo-login-button";
-import { HeartPulse, Stethoscope } from "lucide-react";
+import { HeartPulse, Stethoscope, Activity } from "lucide-react";
 import { seedIfEmpty } from "@/lib/seed";
 
 export const dynamic = "force-dynamic";
@@ -30,6 +30,14 @@ export default async function Home() {
       title: "Staff sign in",
       body: "Physicians, triage nurses and administrators access the consultation console and OPD queue.",
       image: "/images/physician-console.jpg",
+    },
+    {
+      href: "/twin",
+      icon: Activity,
+      eyebrow: "Digital Twin (SIH 2026)",
+      title: "Patient Digital Twin",
+      body: "AI-powered living health model with predictive analytics, risk scoring, and treatment simulation.",
+      image: "/images/hero-kiosk.jpg",
     },
   ];
 
@@ -111,7 +119,7 @@ export default async function Home() {
         <p className="mt-14 text-[11px] uppercase tracking-[0.24em] text-[#f6f0e4]/50">
           Select your portal
         </p>
-        <div className="mt-4 grid gap-5 md:grid-cols-2">
+        <div className="mt-4 grid gap-5 md:grid-cols-3">
           {doors.map((d) => (
             <Link
               key={d.href}

@@ -1,225 +1,249 @@
-# 🏥 MediKiosk
+#  Patient Digital Twin — AI-Powered Living Health Model
 
-**AI-powered self-check-in kiosk for hospitals — patient tells their story once, AI prepares the clinical summary, doctor reviews it, patient sees the doctor's advice in their portal.**
+**A real-time, predictive Digital Twin platform for patients — built on the MediKiosk foundation.**
 
-🔗 **Live demo:** https://medi-kiosk-tau.vercel.app
+The patient's clinical data, vitals, and medical history are synthesized into a **living digital replica** that continuously evolves, predicts health trajectories, and simulates treatment outcomes — enabling proactive, personalized care.
 
----
+ **Live demo:** [https://medi-kiosk-tau.vercel.app](https://medi-kiosk-tau.vercel.app/)
+🧬 **Twin Dashboard:** `/twin` | `/twin/[id]`
 
-## 📘 The Problem
+* * *
 
-In Indian government hospitals, a patient waits in queue just to give their details — name, age, complaint — again and again, at every counter, on every visit. The doctor then takes the medical history verbally and writes it by hand. The patient forgets the doctor's advice by the time they reach home.
+##  Problem Statement (SIH 2026 — Digital Twin Track)
 
-**MediKiosk removes this.** The patient checks in once at a kiosk with just a phone number. AI builds a structured clinical summary before the doctor even sees them. After review, the patient can read the doctor's advice anytime in their own portal.
+In Indian healthcare, patient data is fragmented across visits, departments, and facilities. Doctors lack a **holistic, real-time view** of a patient's health trajectory. There is no system that:
+- Maintains a **living model** of a patient's health state
+- **Predicts** deterioration before it happens
+- **Simulates** treatment outcomes before applying them
+- Integrates real-time **vitals, clinical history, and AI insights** into one unified view
 
----
+**Patient Digital Twin solves this** by creating an AI-driven virtual replica of each patient that evolves with every clinical interaction.
 
-## ✨ Features
+* * *
 
-### 🖥️ Patient Kiosk (`/kiosk`)
-- **Login with just a phone number** — Firebase OTP verification with reCAPTCHA
-- **Returning patient recognition** — phone numbers are normalized to the last 10 digits, so `+919876543210`, `919876543210` and `9876543210` all find the *same* patient. No duplicate records, no lost history
-- **AI-guided medical interview** — simple question-by-question intake, multilingual (English / Hindi)
-- **Step-by-step autosave** — if the network drops mid-intake, the session resumes where it stopped
-- **DPDP-style consent** — data-use and audio-explanation consent recorded per session before the interview starts
+## 🧠 What is a Patient Digital Twin?
 
-### 🚨 Emergency Alert Engine
-- **Hybrid detection**: deterministic **rule-based red-flag checks run first** (chest pain, heavy bleeding, breathlessness…) — never dependent on the AI — then the AI adds softer signals from the full story
-- Every alert is **persisted to the database first**, so it is never lost
-- Channels: **Email (SMTP)**, **WhatsApp + SMS (Twilio)**, plus a live console feed on the dashboard
-- Any missing channel degrades gracefully to a logged mock — the flow never breaks
-
-### 🧠 AI Clinical Summary
-- Powered by **Groq** (`openai/gpt-oss-120b`) — fast and cheap, right for a kiosk
-- Automatic fallback chain: Groq → Gemini → Ollama → **rule-based template** — the kiosk never gets stuck without AI
-- Structured output: chief complaint, HPI, past medical/surgical history, drugs, allergies, family & personal history, review of systems, investigations
-- Bilingual (English / हिंदी) summaries
-
-### 👨‍⚕️ Doctor Dashboard (`/physician`)
-- **Live queue** of all intakes with tokens, departments and emergency badges
-- **Review workspace**: every AI-generated section is editable before confirming
-- **Two separate boxes**:
-  - 🟢 **Advice for patient** — visible in the patient portal
-  - 🟠 **Physician note** — private, for clinicians only
-- **Confirm to HIS/ABHA** — marks the record reviewed and ready for the hospital system
-- **View FHIR Bundle** — the full record in FHIR, the international standard for medical data exchange
-- Live alerts feed with per-channel delivery status
-
-### 📱 Patient Portal (`/portal`)
-- Full visit history — every intake, newest first
-- **✅ Doctor reviewed / ⏳ Awaiting review** status on each visit
-- **👨‍⚕️ Doctor's review box** — who reviewed it, when, and the doctor's advice in plain words
-- ABHA number can be linked to the patient record
-
----
-
-## 🔁 How It Works
+A **Digital Twin** is a virtual model that mirrors a real-world entity in real-time. Our **Patient Digital Twin** mirrors a patient's complete health state:
 
 ```
-┌──────────┐     ┌────────────┐     ┌──────────────┐     ┌────────────┐
-│  Patient  │     │   Kiosk    │     │      AI      │     │   Doctor   │
-│  walks in │ --> │  phone OTP │ --> │  interview + │ --> │  reviews,  │
-│           │     │  no forms  │     │  summary +   │     │  edits,    │
-│           │     │            │     │  red flags   │     │  confirms  │
-└──────────┘     └────────────┘     └──────────────┘     └────────────┘
-                                            │                   │
-                                   🚨 emergency alert        confirms +
-                                   email/WhatsApp/SMS   writes advice
-                                                                │
-                     ┌────────────┐                             v
-                     │  Patient   │ <-------- advice + full summary in
-                     │  portal    │          their portal, forever
-                     └────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                    PATIENT DIGITAL TWIN                       │
+─────────────────────────────────────────────────────────────┤
+│  ┌──────────┐  ──────────────┐  ┌──────────────────────┐  │
+│  │ Twin     │  │ Vitals       │  │ AI Predictive        │  │
+│  │ State    │  │ Stream       │  │ Engine               │  │
+│  │ Machine  │  │ (real-time)  │  │ (trajectory, risk)   │  │
+│  └──────────┘  └──────────────┘  └──────────────────────┘  │
+│  ┌──────────┐  ┌──────────────┐  ┌──────────────────────┐  │
+│  │ Risk     │  │ Treatment    │  │ Health Score         │  │
+│  │ Scores   │  │ Simulation   │  │ (composite 0-100)    │  │
+│  │          │  │ (What-If)    │  │                      │  │
+│  └──────────┘  └──────────────┘  └──────────────────────┘  │
+│                                                             │
+│  Data Sources: Kiosk Intake · Vitals · FHIR · IoT · AI      │
+└─────────────────────────────────────────────────────────────┘
 ```
 
----
+* * *
+
+## ✨ Core Digital Twin Features
+
+### 🫀 1. Twin State Machine
+Each patient's twin exists in one of 6 states, automatically transitioning based on health score:
+- **Baseline** → **Stable** → **Monitoring** → **At Risk** → **Deteriorating** → **Critical**
+
+The state machine evaluates: vitals, chronic conditions, AI clinical summaries, and risk scores.
+
+###  2. Composite Health Score (0-100)
+A continuously updated score computed from:
+- Real-time vitals (HR, BP, SpO2, temperature, glucose, respiratory rate)
+- Chronic condition burden
+- Medication adherence
+- Clinical summary flags
+- Historical trajectory
+
+###  3. Real-Time Vitals Stream
+Simulated and IoT-ready vitals pipeline:
+- Heart rate, blood pressure, SpO2, temperature, respiratory rate, blood glucose
+- Automatic anomaly detection and alerting
+- Historical trend analysis
+
+### 🧠 4. AI Predictive Engine
+Four prediction models running on each twin:
+- **Readmission Risk** — 30-day readmission probability with contributing factors
+- **Disease Progression** — 12-month health trajectory forecast
+- **Vitals Forecast** — Next 24-hour vitals prediction
+- **Complication Risk** — Multi-condition complication probability assessment
+
+### 🎮 5. Treatment Simulation (What-If Engine)
+Physicians can test interventions **before** applying them:
+- **Medication changes** — predicted health score impact over 12 weeks
+- **Lifestyle interventions** — diet, exercise, weight management outcomes
+- **Procedure simulation** — surgical risk vs benefit modeling
+- **Comparative simulation** — A/B test multiple treatment plans
+
+### 🚨 6. Risk Assessment Dashboard
+Automated risk scoring for:
+- 30-day readmission risk
+- Cardiovascular events
+- Disease deterioration
+- Medication adverse effects
+- Sepsis / AKI / DKA / MI / Stroke
+
+### 📱 7. Twin Dashboard
+Real-time visualization of the patient's digital twin:
+- Health score gauge with state indicator
+- Live vitals stream (with demo mode)
+- Risk assessment bars with contributing factors
+- AI prediction timelines with trajectory charts
+- Treatment simulation results
+
+* * *
+
+## 🔁 How It Works — Digital Twin Lifecycle
+
+```
+┌────────────┐     ┌────────────┐     ┌──────────────┐
+│ Patient    │     │ MediKiosk  │     │ Digital Twin │
+│ walks in   │────▶│ Kiosk      │────▶│ Engine       │
+│            │     │ (intake)   │     │              │
+└────────────┘     └────────────┘     └──────┬───────┘
+                                             │
+                                    ┌────────▼────────┐
+                                    │ Twin State      │
+                                    │ Machine Update  │
+                                    └────────────────┘
+                                             │
+                    ┌────────────────────────┼────────────────────────┐
+                    ▼                        ▼                        ▼
+            ┌───────────────┐       ┌──────────────┐        ┌─────────────┐
+            │ Vitals Stream │       │ Risk Scores  │        │ Predictions │
+            │ (real-time)   │       │ (auto-computed)│       │ (AI engine) │
+            └───────┬───────┘       └──────────────┘        └──────┬──────┘
+                    │                                               │
+                    ▼                                               ▼
+            ┌──────────────┐                               ┌──────────────┐
+            │ Twin Snapshot│                               │ Simulation   │
+            │ (audit trail)│                               │ (What-If)    │
+            └──────────────┘                               └──────────────┘
+                    │                                               │
+                    └──────────────────────────────────────────────┘
+                                     ▼
+                            ┌────────────────┐
+                            │ Twin Dashboard │
+                            │ (physician     │
+                            │  visualization)│
+                            └────────────────┘
+```
+
+* * *
 
 ## 🛠️ Tech Stack
 
 | Layer | Technology |
-|---|---|
+| --- | --- |
 | Framework | **Next.js 16** (App Router) + **React 19** + TypeScript |
 | Styling | Tailwind CSS 4 |
 | Database | **PostgreSQL** + **Drizzle ORM** (type-safe schema & queries) |
-| Auth | **Firebase** phone OTP (patient) + server session cookies (HttpOnly) |
-| AI | **Groq** (`openai/gpt-oss-120b`), fallbacks: Gemini, Ollama, template engine |
+| Auth | **Firebase** phone OTP (patient) + server session cookies |
+| AI | **Groq** (`openai/gpt-oss-120b`), fallbacks: Gemini, Ollama, rule engine |
+| Twin Engine | Custom state machine + rule-based risk calculator |
+| Predictions | AI-powered trajectory modeling + vital trend analysis |
+| Simulation | What-if treatment scenario engine |
 | Alerts | **Nodemailer** (SMTP email), **Twilio** (WhatsApp + SMS) |
-| Standards | FHIR bundle output, ABHA id storage, DPDP consent records |
+| Standards | FHIR bundle output, ABHA id storage, DPDP consent |
 | Hosting | **Vercel** (auto-deploy from GitHub) |
 
----
+* * *
+
+## 📁 Project Structure (Digital Twin Layer)
+
+```
+PatientDigitalTwin/
+├── src/
+│   ├── db/
+│   │   ├── schema.ts              # Base MediKiosk schema
+│   │   └── twin-schema.ts         # ⭐ Digital Twin tables
+│   ├── lib/
+│   │   ├── twin-engine.ts         # ⭐ Core twin state machine
+│   │   ├── vitals-simulator.ts    # ⭐ Real-time vitals generator
+│   │   ├── prediction-engine.ts   # ⭐ AI prediction models
+│   │   └── simulation-engine.ts   # ⭐ What-if treatment simulator
+│   ├── app/
+│   │   ├── twin/
+│   │   │   ├── page.tsx           # ⭐ Twin listing & creation
+│   │   │   └── [id]/page.tsx      # ⭐ Twin dashboard (live)
+│   │   └── api/
+│   │       ├── twin/route.ts      # ⭐ Twin CRUD API
+│   │       └── simulate/route.ts  # ⭐ Simulation API
+│   └── components/                # Existing MediKiosk UI
+├── package.json
+├── drizzle.config.ts
+└── README.md
+```
+
+* * *
 
 ## 🚀 Getting Started
 
 ```bash
-# 1. Clone
-git clone https://github.com/shridhar-1/MediKiosk.git
-cd MediKiosk
+# Clone the repo
+git clone https://github.com/shridhar-1/PatientDigitalTwin.git
+cd PatientDigitalTwin
 
-# 2. Install dependencies
+# Install dependencies
 npm install
 
-# 3. Create .env.local (see table below)
+# Set up environment
+cp .env.example .env.local
+# Fill in your DATABASE_URL, Firebase, Groq keys, etc.
 
-# 4. Create the database tables
+# Run database migrations
 npx drizzle-kit push
 
-# 5. Run
-npm run dev          # http://localhost:3000
+# Start development server
+npm run dev
 ```
 
----
+Visit [http://localhost:3000/twin](http://localhost:3000/twin) for the Digital Twin dashboard.
 
-## 🔑 Environment Variables
+* * *
 
-Create a `.env.local` file. Only the first two groups are needed to run — everything else degrades gracefully.
+##  Demo Walkthrough
 
-**Required**
+1. **Create a Twin** — Go to `/twin` and click "Create Twin" with patient data
+2. **View the Dashboard** — See health score, vitals, risks, predictions
+3. **Enable Live Mode** — Click "Start Live Demo" to stream simulated vitals
+4. **Run a Simulation** — Test treatment scenarios via the API
+5. **Watch the Twin Evolve** — Health score and state update in real-time
 
-| Variable | What it does |
-|---|---|
-| `DATABASE_URL` | PostgreSQL connection string |
-| `NEXT_PUBLIC_FIREBASE_API_KEY` / `_AUTH_DOMAIN` / `_PROJECT_ID` / `_STORAGE_BUCKET` / `_MESSAGING_SENDER_ID` / `_APP_ID` | Firebase phone-auth config |
+* * *
 
-**AI (all optional — template fallback if unset)**
+## 📊 Digital Twin Data Model
 
-| Variable | What it does |
-|---|---|
-| `GROQ_API_KEY`, `GROQ_MODEL` | Primary summary engine |
-| `GEMINI_API_KEY` | Fallback engine |
-| `OLLAMA_BASE_URL`, `OLLAMA_MODEL` | Local/self-host fallback |
-| `AI_ENGINE` | Force a specific engine |
+### Core Tables (PostgreSQL via Drizzle)
 
-**Emergency alerts (optional — logged as mock if unset)**
+| Table | Purpose |
+| --- | --- |
+| `digital_twins` | Living twin model per patient (state, health score, conditions) |
+| `vital_events` | Real-time vitals stream (HR, BP, SpO2, temp, glucose, RR) |
+| `twin_snapshots` | Point-in-time state snapshots (audit trail) |
+| `risk_scores` | AI/rule-computed risk assessments |
+| `predictions` | AI-generated future trajectory forecasts |
+| `simulations` | Treatment what-if scenario results |
+| `device_integrations` | IoT/wearable device connections |
 
-| Variable | What it does |
-|---|---|
-| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS` | Email alerts |
-| `HOSPITAL_ALERT_EMAIL`, `HOSPITAL_ALERT_PHONE`, `HOSPITAL_ALERT_WHATSAPP` | Where alerts are sent |
-| `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_SMS_FROM`, `TWILIO_WHATSAPP_FROM` | WhatsApp/SMS sending |
+* * *
 
-**Future integrations (slots ready, onboarding in progress)**
+## 🏆 SIH 2026 Submission Details
 
-| Variable | What it does |
-|---|---|
-| `ABDM_CLIENT_ID`, `ABDM_CLIENT_SECRET`, `ABDM_GATEWAY_URL`, `ABDM_X_HIP_ID`, `ABDM_HIP_NAME` | ABDM / ABHA push |
-| `NEXT_PUBLIC_BHASHINI_API_KEY`, `NEXT_PUBLIC_BHASHINI_ASR_URL`, `BHASHINI_USER_ID` | Bhashini speech input |
-| `HIS_FHIR_URL`, `HIS_FHIR_BASIC_AUTH`, `HIS_API_KEY` | Hospital Information System |
-| `UIDAI_LICENSE_KEY`, `UIDAI_VAULT_URL`, `UIDAI_EKYC_URL` | Aadhaar e-KYC |
+- **Problem Statement:** Digital Twin for Healthcare (Happiest Health Track)
+- **Team:** [Your Team Name]
+- **Repository:** [github.com/shridhar-1/PatientDigitalTwin](https://github.com/shridhar-1/PatientDigitalTwin)
+- **Live Demo:** [https://medi-kiosk-tau.vercel.app](https://medi-kiosk-tau.vercel.app/)
 
-> ⚠️ After changing variables on Vercel, **redeploy** — changes only take effect on a new deployment.
-
----
-
-## 📡 Key API Routes
-
-| Route | Purpose |
-|---|---|
-| `POST /api/auth/demo` | Patient/staff session login (phone normalized to last 10 digits) |
-| `GET/POST /api/patients` | Register / search patients (phone & ABHA de-duplicate) |
-| `GET/POST/DELETE /api/sessions` | Intake sessions (`?phone=`, `?abhaId=`, `?patientId=`) |
-| `POST /api/sessions/[id]/answers` | Save interview answers |
-| `POST /api/sessions/[id]/submit` | Submit intake → generate summary + fire alerts |
-| `POST/PATCH /api/sessions/[id]/summary` | Generate / edit / confirm summary, save patient advice |
-| `GET /api/notifications` | Live alert feed + per-channel status |
-
----
-
-## 🗂️ Project Structure
-
-```
-src/
-├── app/
-│   ├── api/                 # API routes (auth, patients, sessions, summary, notifications)
-│   ├── kiosk/               # Patient kiosk intake
-│   ├── portal/              # Patient portal (history + doctor's advice)
-│   ├── physician/           # Doctor dashboard (queue, records, review)
-│   └── login/               # Login pages
-├── components/
-│   ├── PhoneAuth.tsx        # Phone/OTP login component
-│   ├── kiosk-app.tsx        # Intake interview UI
-│   └── physician/           # Review workspace, queue, doctor-detail views
-├── db/                      # Drizzle schema + client
-└── lib/                     # summary-engine, alert engine, auth, ids, seed
-```
-
----
-
-## 🧪 Before You Push
-
-```bash
-npm run typecheck    # tsc --noEmit — must print nothing
-npm run build        # verify the build passes
-```
-
----
-
-## 🗺️ Roadmap
-
-- 🎙️ **Bhashini** speech input — voice intake in 12+ Indian languages
-- 🏛️ Full **ABDM onboarding** — push confirmed records to the patient's ABHA health locker
-- 🔢 Live **token display board** so patients know their turn
-- 🪪 Aadhaar e-KYC based identity (UIDAI slots prepared)
-
----
-
-## 🤝 Demo Logins
-
-| Role | How |
-|---|---|
-| Patient | Any phone number (OTP) — demo mode also allows direct login |
-| Doctor / Staff | Any staff email, e.g. `dr.meena@hospital.in` |
-
----
-
-## 👤 Author
-
-**Shridhar Madival** — built as a hospital-tech project for Indian public healthcare.
-
-🔗 Repo: [shridhar-1/MediKiosk](https://github.com/shridhar-1/MediKiosk) · Live: [medi-kiosk-tau.vercel.app](https://medi-kiosk-tau.vercel.app)
-
----
+* * *
 
 ## 📄 License
 
-For demonstration and evaluation. All patient data in the demo is synthetic test data.
+MIT — Built for SIH 2026
