@@ -4,9 +4,9 @@
 
 **Reimagining & Reforming Healthcare in India Summit 2026, Bengaluru**
 
-**Live Demo:** [https://medi-kiosk-tau.vercel.app/twin](https://medi-kiosk-tau.vercel.app/twin)
+**Live Demo:** https://meditwin-fawn.vercel.app/
 
-**Repository:** [github.com/shridhar-1/PatientDigitalTwin](https://github.com/shridhar-1/PatientDigitalTwin)
+**Repository:** https://github.com/shridhar-1/MediTwin
 
 ---
 
@@ -16,9 +16,10 @@
 |-------|-------------|
 | **Team Name** | Team GlucoTwin |
 | **Team Lead** | Shridhar |
-| **Team Lead Phone** | [Submit via portal] |
-| **Team Lead Email** | [Submit via portal] |
-| **Team Size** | [Add team members] |
+| **Team Lead Phone** | +91 9972752670 |
+| **Team Lead Email** | madivalshridhar1@gmail.com |
+| **Team Member** | Gurutej Hegde |
+| **Team Size** | 2 members |
 
 ---
 
@@ -26,9 +27,9 @@
 
 | Field | Information |
 |-------|-------------|
-| **College / Institute** | [Your College Name] |
-| **Incubator / Centre of Excellence** | [If applicable] |
-| **Location** | [City, State] |
+| **College / Institute** | Anjuman Institute Of Technology And Management Bhatkal |
+| **Incubator / Centre of Excellence** | Not applicable |
+| **Location** | Bhatkal, Karnataka, India |
 
 ---
 
@@ -176,9 +177,9 @@ GlucoTwin enables **scalable, AI-driven diabetes management** without requiring 
 
 ## 📹 8. Demo Video Link
 
-**Video URL:** [Add your unlisted YouTube link here]
+**Video URL:** [Add your unlisted YouTube link here after recording]
 
-**Video Duration:** [X minutes]
+**Video Duration:** ~3 minutes
 
 **Video Script:**
 - 0:00 - 0:30: Introduction to GlucoTwin and problem statement
@@ -440,12 +441,14 @@ PatientDigitalTwin/
 ## 📧 Contact
 
 - **GitHub:** [github.com/shridhar-1](https://github.com/shridhar-1)
-- **Email:** [your email]
+- **Email:** madivalshridhar1@gmail.com
+- **Phone:** +91 9972752670
 - **Team Lead:** Shridhar
+- **Team Member:** Gurutej Hegde
 
 ---
 
-**Submission Date:** [Add date]
+**Submission Date:** October 2026
 
 **Submission Platform:** Happiest Health Digital Twin Challenge 2026 (Unstop)
 
