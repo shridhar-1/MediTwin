@@ -58,118 +58,40 @@ interface GlucoseForecast {
 function getStateColor(state: string) {
   switch (state) {
     case "baseline":
-      return "from-emerald-500 to-emerald-600";
+      return "bg-emerald-500 text-white";
     case "stable":
-      return "from-green-500 to-green-600";
+      return "bg-green-500 text-white";
     case "monitoring":
-      return "from-blue-500 to-blue-600";
+      return "bg-blue-500 text-white";
     case "at_risk":
-      return "from-amber-500 to-amber-600";
+      return "bg-amber-500 text-white";
     case "critical":
-      return "from-red-500 to-red-600";
+      return "bg-red-500 text-white";
     case "deteriorating":
-      return "from-orange-500 to-orange-600";
+      return "bg-orange-500 text-white";
     default:
-      return "from-gray-500 to-gray-600";
+      return "bg-gray-500 text-white";
   }
 }
 
 function getRiskGradient(level: string) {
   switch (level) {
     case "critical":
-      return "from-red-500 to-red-600";
+      return "bg-red-500 text-white";
     case "high":
-      return "from-orange-500 to-orange-600";
+      return "bg-orange-500 text-white";
     case "moderate":
-      return "from-amber-500 to-amber-600";
+      return "bg-amber-500 text-white";
     default:
-      return "from-emerald-500 to-emerald-600";
+      return "bg-emerald-500 text-white";
   }
 }
 
-function getScoreGradient(score: number) {
-  if (score >= 80) return "from-emerald-400 to-emerald-600";
-  if (score >= 60) return "from-blue-400 to-blue-600";
-  if (score >= 40) return "from-amber-400 to-amber-600";
-  return "from-red-400 to-red-600";
-}
-
-function HealthScoreGauge({ score }: { score: number }) {
-  const radius = 90;
-  const circumference = 2 * Math.PI * radius;
-  const progress = (score / 100) * circumference;
-  const remaining = circumference - progress;
-
-  return (
-    <div className="relative">
-      <svg width="240" height="240" className="-rotate-90">
-        <circle
-          cx="120"
-          cy="120"
-          r={radius}
-          fill="none"
-          stroke="#1e293b"
-          strokeWidth="16"
-        />
-        <circle
-          cx="120"
-          cy="120"
-          r={radius}
-          fill="none"
-          stroke="url(#scoreGradient)"
-          strokeWidth="16"
-          strokeDasharray={`${progress} ${remaining}`}
-          strokeLinecap="round"
-          className="transition-all duration-1000"
-        />
-        <defs>
-          <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#06b6d4" />
-            <stop offset="100%" stopColor="#8b5cf6" />
-          </linearGradient>
-        </defs>
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span
-          className={`text-6xl font-bold bg-gradient-to-r ${getScoreGradient(
-            score
-          )} bg-clip-text text-transparent`}
-        >
-          {score.toFixed(1)}
-        </span>
-        <span className="text-sm text-gray-400 mt-1">Health Score</span>
-      </div>
-    </div>
-  );
-}
-
-function VitalCard({
-  icon: Icon,
-  label,
-  value,
-  unit,
-  normal,
-  color,
-}: {
-  icon: any;
-  label: string;
-  value: string | number | null;
-  unit: string;
-  normal: string;
-  color: string;
-}) {
-  return (
-    <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-5">
-      <div className="flex items-center gap-2 mb-3">
-        <Icon className={color} size={20} />
-        <span className="text-xs text-gray-400">{label}</span>
-      </div>
-      <div className="text-3xl font-bold text-white mb-1">{value ?? "—"}</div>
-      <span className="text-xs text-gray-500">
-        {unit} ({normal})
-      </span>
-    </div>
-  );
+function getScoreColor(score: number) {
+  if (score >= 80) return "text-emerald-400";
+  if (score >= 60) return "text-blue-400";
+  if (score >= 40) return "text-amber-400";
+  return "text-red-400";
 }
 
 export default function TwinDashboard({
@@ -243,12 +165,10 @@ export default function TwinDashboard({
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      <div className="flex items-center justify-center min-h-screen bg-slate-900">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-xl font-light text-gray-300">
-            Loading Digital Twin...
-          </p>
+          <p className="text-xl text-gray-300">Loading Digital Twin...</p>
         </div>
       </div>
     );
@@ -256,7 +176,7 @@ export default function TwinDashboard({
 
   if (!twin) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      <div className="flex items-center justify-center min-h-screen bg-slate-900">
         <div className="text-center">
           <p className="text-2xl text-gray-300 mb-4">Twin not found.</p>
           <a
@@ -271,16 +191,16 @@ export default function TwinDashboard({
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen bg-slate-900 text-white">
       {/* Header */}
-      <header className="bg-slate-900/70 backdrop-blur-xl border-b border-slate-700/50 px-6 py-4">
+      <header className="bg-slate-800 border-b border-slate-700 px-6 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 bg-gradient-to-br from-cyan-500 to-purple-600 rounded-2xl flex items-center justify-center">
               <Droplets className="text-white" size={28} />
             </div>
             <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
+              <h1 className="text-3xl font-bold text-white">
                 GlucoTwin Dashboard
               </h1>
               <p className="text-sm text-gray-400 mt-1">
@@ -292,10 +212,10 @@ export default function TwinDashboard({
           <div className="flex items-center gap-3">
             <button
               onClick={() => setLiveMode(!liveMode)}
-              className={`px-5 py-2.5 rounded-xl font-semibold flex items-center gap-2 transition ${
+              className={`px-5 py-2.5 rounded-xl font-semibold flex items-center gap-2 ${
                 liveMode
-                  ? "bg-gradient-to-r from-red-500 to-pink-600 text-white"
-                  : "bg-slate-800/70 border border-slate-700 text-gray-300 hover:border-cyan-500"
+                  ? "bg-red-500 text-white"
+                  : "bg-slate-700 text-gray-300"
               }`}
             >
               <span
@@ -319,23 +239,32 @@ export default function TwinDashboard({
         {/* Row 1: Health Score + Glucose Prediction */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Health Score Card */}
-          <div className="bg-slate-900/70 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-8">
+          <div className="bg-slate-800 border border-slate-700 rounded-2xl p-8">
             <h2 className="text-sm text-gray-400 uppercase tracking-wider mb-6">
               Composite Health Score
             </h2>
             <div className="flex items-center justify-center mb-6">
-              <HealthScoreGauge score={healthScore} />
+              <div className="text-center">
+                <div
+                  className={`text-7xl font-bold mb-2 ${getScoreColor(
+                    healthScore
+                  )}`}
+                >
+                  {healthScore.toFixed(1)}
+                </div>
+                <div className="text-lg text-gray-400">Health Score</div>
+              </div>
             </div>
-            <div className="flex justify-center">
+            <div className="flex justify-center mb-6">
               <span
-                className={`px-4 py-1.5 rounded-full text-sm font-semibold bg-gradient-to-r ${getStateColor(
+                className={`px-4 py-2 rounded-full text-sm font-semibold ${getStateColor(
                   twin.twinState
-                )} text-white`}
+                )}`}
               >
                 {twin.twinState.replace("_", " ").toUpperCase()}
               </span>
             </div>
-            <div className="mt-6 grid grid-cols-2 gap-4 text-sm">
+            <div className="grid grid-cols-2 gap-4 text-sm pt-6 border-t border-slate-700">
               <div>
                 <span className="text-gray-400">Last Updated</span>
                 <p className="text-white mt-1">
@@ -353,36 +282,36 @@ export default function TwinDashboard({
 
           {/* Glucose Prediction Card */}
           {glucosePrediction && (
-            <div className="bg-slate-900/70 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-8">
+            <div className="bg-slate-800 border border-slate-700 rounded-2xl p-8">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-sm text-gray-400 uppercase tracking-wider flex items-center gap-2">
                   <Brain size={16} className="text-purple-400" />
                   Glucose Spike Prediction (60 min)
                 </h2>
                 <span
-                  className={`px-4 py-1.5 rounded-full text-xs font-bold bg-gradient-to-r ${getRiskGradient(
+                  className={`px-4 py-2 rounded-full text-xs font-bold ${getRiskGradient(
                     glucosePrediction.riskLevel
-                  )} text-white`}
+                  )}`}
                 >
                   {glucosePrediction.riskLevel.toUpperCase()} RISK
                 </span>
               </div>
 
-              <div className="grid grid-cols-3 gap-6 mb-6">
+              <div className="grid grid-cols-3 gap-4 mb-6">
                 <div className="text-center">
-                  <div className="text-4xl font-bold text-white mb-1">
+                  <div className="text-3xl font-bold text-white mb-1">
                     {(glucosePrediction.probability * 100).toFixed(0)}%
                   </div>
                   <div className="text-xs text-gray-400">Spike Probability</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent mb-1">
+                  <div className="text-3xl font-bold text-blue-400 mb-1">
                     {glucosePrediction.predictedGlucoseIn60min}
                   </div>
                   <div className="text-xs text-gray-400">@ 60 min (mg/dL)</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-purple-600 bg-clip-text text-transparent mb-1">
+                  <div className="text-3xl font-bold text-purple-400 mb-1">
                     {glucosePrediction.predictedGlucoseIn120min}
                   </div>
                   <div className="text-xs text-gray-400">@ 120 min (mg/dL)</div>
@@ -390,7 +319,7 @@ export default function TwinDashboard({
               </div>
 
               {glucosePrediction.timeToSpike && (
-                <div className="mb-6 p-4 bg-amber-500/20 border border-amber-500/30 rounded-xl">
+                <div className="mb-6 p-4 bg-amber-900/30 border border-amber-700 rounded-xl">
                   <div className="flex items-center gap-3 text-amber-300">
                     <AlertTriangle size={20} />
                     <span className="font-semibold">
@@ -410,7 +339,7 @@ export default function TwinDashboard({
                     {glucosePrediction.contributingFactors.map((f, i) => (
                       <span
                         key={i}
-                        className="text-xs bg-slate-800/70 border border-slate-700 px-3 py-1.5 rounded-full text-gray-300"
+                        className="text-xs bg-slate-900 border border-slate-700 px-3 py-1.5 rounded-full text-gray-300"
                       >
                         {f.factor}
                       </span>
@@ -419,7 +348,7 @@ export default function TwinDashboard({
                 </div>
               )}
 
-              <div className="mt-4 pt-4 border-t border-slate-700 text-xs text-gray-400">
+              <div className="mt-6 pt-4 border-t border-slate-700 text-xs text-gray-400">
                 Model confidence:{" "}
                 {(glucosePrediction.confidence * 100).toFixed(0)}%
               </div>
@@ -429,19 +358,19 @@ export default function TwinDashboard({
 
         {/* Row 2: Glucose Forecast Chart */}
         {glucoseForecast.length > 0 && (
-          <div className="bg-slate-900/70 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-8">
+          <div className="bg-slate-800 border border-slate-700 rounded-2xl p-8">
             <h2 className="text-sm text-gray-400 uppercase tracking-wider mb-6 flex items-center gap-2">
               <TrendingUp size={16} className="text-cyan-400" />
               Glucose Forecast (Next 4 Hours)
             </h2>
 
             <div className="relative h-64 mb-6">
-              <div className="absolute top-8 w-full border-t-2 border-red-500/50 border-dashed">
+              <div className="absolute top-8 w-full border-t-2 border-red-500 border-dashed">
                 <span className="absolute -top-5 right-0 text-xs text-red-400">
                   Hyperglycemia (180 mg/dL)
                 </span>
               </div>
-              <div className="absolute bottom-8 w-full border-t-2 border-blue-500/50 border-dashed">
+              <div className="absolute bottom-8 w-full border-t-2 border-blue-500 border-dashed">
                 <span className="absolute -top-5 right-0 text-xs text-blue-400">
                   Hypoglycemia (70 mg/dL)
                 </span>
@@ -458,21 +387,18 @@ export default function TwinDashboard({
                   return (
                     <div
                       key={i}
-                      className="flex-1 flex flex-col items-center justify-end h-full group"
+                      className="flex-1 flex flex-col items-center justify-end h-full"
                     >
                       <div
-                        className={`w-full rounded-t-lg transition-all ${
+                        className={`w-full rounded-t ${
                           isHighRisk
-                            ? "bg-gradient-to-t from-red-500 to-red-400"
+                            ? "bg-red-500"
                             : point.predictedGlucose > 140
-                            ? "bg-gradient-to-t from-amber-500 to-amber-400"
-                            : "bg-gradient-to-t from-emerald-500 to-emerald-400"
+                            ? "bg-amber-500"
+                            : "bg-emerald-500"
                         }`}
                         style={{ height: `${barHeight}%` }}
                       />
-                      <div className="absolute -top-8 opacity-0 group-hover:opacity-100 transition bg-slate-800 px-2 py-1 rounded text-xs text-white">
-                        {point.predictedGlucose} mg/dL
-                      </div>
                     </div>
                   );
                 })}
@@ -489,7 +415,7 @@ export default function TwinDashboard({
 
             <div className="mt-6 pt-6 border-t border-slate-700 flex items-center justify-between">
               <span className="text-gray-400">Current Glucose:</span>
-              <span className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+              <span className="text-2xl font-bold text-cyan-400">
                 {currentGlucose} mg/dL
               </span>
             </div>
@@ -497,7 +423,7 @@ export default function TwinDashboard({
         )}
 
         {/* Row 3: Vitals */}
-        <div className="bg-slate-900/70 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-8">
+        <div className="bg-slate-800 border border-slate-700 rounded-2xl p-8">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-sm text-gray-400 uppercase tracking-wider flex items-center gap-2">
               <Activity size={16} className="text-cyan-400" />
@@ -513,42 +439,51 @@ export default function TwinDashboard({
 
           {latestVital ? (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <VitalCard
-                icon={Heart}
-                label="Heart Rate"
-                value={latestVital.heartRate}
-                unit="bpm"
-                normal="60-100"
-                color="text-red-400"
-              />
-              <VitalCard
-                icon={Droplets}
-                label="Blood Glucose"
-                value={latestVital.bloodGlucose}
-                unit="mg/dL"
-                normal="70-140"
-                color="text-blue-400"
-              />
-              <VitalCard
-                icon={Activity}
-                label="Blood Pressure"
-                value={
-                  latestVital.systolicBP && latestVital.diastolicBP
+              <div className="bg-slate-900 border border-slate-700 rounded-xl p-5">
+                <div className="flex items-center gap-2 mb-3">
+                  <Heart className="text-red-400" size={20} />
+                  <span className="text-xs text-gray-400">Heart Rate</span>
+                </div>
+                <div className="text-2xl font-bold text-white mb-1">
+                  {latestVital.heartRate ?? "—"}
+                </div>
+                <span className="text-xs text-gray-500">bpm (60-100)</span>
+              </div>
+
+              <div className="bg-slate-900 border border-slate-700 rounded-xl p-5">
+                <div className="flex items-center gap-2 mb-3">
+                  <Droplets className="text-blue-400" size={20} />
+                  <span className="text-xs text-gray-400">Blood Glucose</span>
+                </div>
+                <div className="text-2xl font-bold text-white mb-1">
+                  {latestVital.bloodGlucose ?? "—"}
+                </div>
+                <span className="text-xs text-gray-500">mg/dL (70-140)</span>
+              </div>
+
+              <div className="bg-slate-900 border border-slate-700 rounded-xl p-5">
+                <div className="flex items-center gap-2 mb-3">
+                  <Activity className="text-purple-400" size={20} />
+                  <span className="text-xs text-gray-400">Blood Pressure</span>
+                </div>
+                <div className="text-2xl font-bold text-white mb-1">
+                  {latestVital.systolicBP && latestVital.diastolicBP
                     ? `${latestVital.systolicBP}/${latestVital.diastolicBP}`
-                    : null
-                }
-                unit="mmHg"
-                normal="120/80"
-                color="text-purple-400"
-              />
-              <VitalCard
-                icon={Zap}
-                label="SpO2"
-                value={latestVital.spo2}
-                unit="%"
-                normal="95-100"
-                color="text-amber-400"
-              />
+                    : "—"}
+                </div>
+                <span className="text-xs text-gray-500">mmHg (120/80)</span>
+              </div>
+
+              <div className="bg-slate-900 border border-slate-700 rounded-xl p-5">
+                <div className="flex items-center gap-2 mb-3">
+                  <Zap className="text-amber-400" size={20} />
+                  <span className="text-xs text-gray-400">SpO2</span>
+                </div>
+                <div className="text-2xl font-bold text-white mb-1">
+                  {latestVital.spo2 ?? "—"}
+                </div>
+                <span className="text-xs text-gray-500">% (95-100)</span>
+              </div>
             </div>
           ) : (
             <div className="text-center py-12">
@@ -565,7 +500,7 @@ export default function TwinDashboard({
 
         {/* Row 4: Twin Profile & Conditions */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-slate-900/70 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6">
+          <div className="bg-slate-800 border border-slate-700 rounded-2xl p-6">
             <h3 className="text-sm text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
               <Shield size={16} className="text-cyan-400" />
               Twin Profile
@@ -586,7 +521,7 @@ export default function TwinDashboard({
             </div>
           </div>
 
-          <div className="bg-slate-900/70 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6">
+          <div className="bg-slate-800 border border-slate-700 rounded-2xl p-6">
             <h3 className="text-sm text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
               <AlertTriangle size={16} className="text-amber-400" />
               Chronic Conditions
@@ -596,7 +531,7 @@ export default function TwinDashboard({
                 {twin.chronicConditions.map((c, i) => (
                   <span
                     key={i}
-                    className="text-xs bg-red-500/20 border border-red-500/30 text-red-300 px-3 py-1.5 rounded-full"
+                    className="text-xs bg-red-900/30 border border-red-700 text-red-300 px-3 py-1.5 rounded-full"
                   >
                     {c.replace("_", " ")}
                   </span>
@@ -607,7 +542,7 @@ export default function TwinDashboard({
             )}
           </div>
 
-          <div className="bg-slate-900/70 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6">
+          <div className="bg-slate-800 border border-slate-700 rounded-2xl p-6">
             <h3 className="text-sm text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
               <Heart size={16} className="text-purple-400" />
               Medications
@@ -617,7 +552,7 @@ export default function TwinDashboard({
                 {twin.currentMedications.map((m, i) => (
                   <div
                     key={i}
-                    className="flex items-center justify-between bg-slate-800/50 rounded-lg p-2"
+                    className="flex items-center justify-between bg-slate-900 rounded-lg p-3"
                   >
                     <span className="text-sm font-medium text-white">
                       {m.name}
