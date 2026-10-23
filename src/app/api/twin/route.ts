@@ -1,16 +1,15 @@
 /**
  * API: Digital Twin Management — GlucoTwin Edition
  *
- * POST   /api/twin          — Create/update twin, run predictions
+ * POST   /api/twin          — Create/update twin
  * GET    /api/twin?twinId=  — Get twin with glucose predictions
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { createTwin, getTwinByPatient, getTwinById, updateTwin, recomputeRisks } from "@/lib/twin-engine";
+import { createTwin, getTwinByPatient, getTwinById, updateTwin, recomputeRisks, getRecentVitals, getRisksForTwin } from "@/lib/twin-engine";
 import { getPredictionsForTwin } from "@/lib/prediction-engine";
 import { getSimulationsForTwin } from "@/lib/simulation-engine";
-import { getRecentVitals, getRisksForTwin } from "@/lib/twin-engine";
-import { generateSyntheticPatient, generateWearableStream } from "@/lib/synthetic-data";
+import { generateSyntheticPatient } from "@/lib/synthetic-data";
 import { predictGlucoseSpike, generateGlucoseForecast } from "@/lib/glucose-model";
 
 export async function POST(request: NextRequest) {
@@ -70,11 +69,9 @@ export async function GET(request: NextRequest) {
       }
 
       // Generate synthetic EHR for this twin (based on conditions)
-      const severity = twin.healthScore && parseFloat(twin.healthScore) > 75
-        ? "well_controlled"
-        : twin.healthScore && parseFloat(twin.healthScore) > 50
-        ? "moderate"
-        : "poor";
+      const score = parseFloat(twin.healthScore);
+      const severity =
+        score > 75 ? "well_controlled" : score > 50 ? "moderate" : "poor";
 
       const syntheticPatient = generateSyntheticPatient(
         severity as "well_controlled" | "moderate" | "poor"
@@ -85,8 +82,13 @@ export async function GET(request: NextRequest) {
       if (vitals.length > 0) {
         // Convert DB vitals to wearable format for model input
         wearableStream = vitals.map((v) => ({
-          timestamp: v.recordedAt,
-          glucose: v.bloodGlucose ? parseFloat(String(v.bloodGlucose)) : 100,
+          timestamp:
+            v.recordedAt instanceof Date
+              ? v.recordedAt.toISOString()
+              : String(v.recordedAt),
+          glucose: v.bloodGlucose
+            ? parseFloat(String(v.bloodGlucose))
+            : 100,
           heartRate: v.heartRate ?? 72,
           hrRmssd: Math.floor(20 + Math.random() * 30),
           steps: Math.floor(Math.random() * 20),
@@ -100,10 +102,18 @@ export async function GET(request: NextRequest) {
 
       // Run glucose spike prediction (60 min ahead)
       const recentWindow = wearableStream.slice(-12); // last hour
-      const glucosePrediction = predictGlucoseSpike(recentWindow, syntheticPatient.ehr, 60);
+      const glucosePrediction = predictGlucoseSpike(
+        recentWindow,
+        syntheticPatient.ehr,
+        60
+      );
 
       // Generate 4-hour glucose forecast
-      const glucoseForecast = generateGlucoseForecast(recentWindow, syntheticPatient.ehr, 4);
+      const glucoseForecast = generateGlucoseForecast(
+        recentWindow,
+        syntheticPatient.ehr,
+        4
+      );
 
       return NextResponse.json({
         twin,
@@ -122,7 +132,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ twin });
     }
 
-    return NextResponse.json({ error: "Provide twinId or patientId" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Provide twinId or patientId" },
+      { status: 400 }
+    );
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
